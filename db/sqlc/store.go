@@ -52,8 +52,6 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
-var txKey = struct{}{}
-
 // TransferTx performs money transaction between one account to another
 // 1.create transfer record 2.add account entries 3.add accounts balance within a single db transaction
 func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
@@ -61,13 +59,10 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 
 	err := store.execTx(context.Background(), func(q *Queries) error {
 		var err error
-		txName := ctx.Value(txKey)
-
 		if arg.Amount <= 0 {
 			return fmt.Errorf("amount must be positive: cannot operate a transaction with negative amount")
 		}
 
-		fmt.Println(txName, "create transfer")
 		// What happen if amount is negative => don't operate the function
 		res.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
@@ -78,7 +73,6 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		if err != nil {
 			return err
 		}
-		fmt.Println(txName, "create entry 1")
 		res.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountID,
 			Amount:    -arg.Amount,
@@ -87,7 +81,6 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		if err != nil {
 			return err
 		}
-		fmt.Println(txName, "create entry 2")
 		res.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,
@@ -97,45 +90,27 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		// TODO: Update account balance
-		// Here should be from race condition and deadlocks of course hence we will use semaphore or called in golang
-
-		fmt.Println(txName, "get account 1")
-		acc1, err := q.GetAccountForUpdate(context.Background(), arg.FromAccountID)
-
-		if err != nil {
-			return err
+		from := UpdateAccountBalanceParams{Amount: -arg.Amount, ID: arg.FromAccountID}
+		to := UpdateAccountBalanceParams{Amount: arg.Amount, ID: arg.ToAccountID}
+		if arg.FromAccountID < arg.ToAccountID {
+			res.FromAccount, res.ToAccount, err = addMoney(ctx, q, from, to)
+		} else {
+			res.ToAccount, res.FromAccount, err = addMoney(ctx, q, to, from)
 		}
 
-		fmt.Println(txName, "update account 1")
-		res.FromAccount, err = q.UpdateAccount(context.Background(), UpdateAccountParams{
-			ID:      arg.FromAccountID,
-			Balance: acc1.Balance - arg.Amount,
-		})
-
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(txName, "get account 2")
-		acc2, err := q.GetAccountForUpdate(context.Background(), arg.ToAccountID)
-
-		if err != nil {
-			return err
-		}
-		fmt.Println(txName, "update account 2")
-		res.ToAccount, err = q.UpdateAccount(context.Background(), UpdateAccountParams{
-			ID:      arg.ToAccountID,
-			Balance: acc2.Balance + arg.Amount,
-		})
-
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return err
 
 	})
 
 	return res, err
+}
+
+func addMoney(ctx context.Context, q *Queries, updateAcc1, updateAcc2 UpdateAccountBalanceParams) (account1 Account, account2 Account, err error) {
+	account1, err = q.UpdateAccountBalance(ctx, updateAcc1)
+	if err != nil {
+		return
+	}
+
+	account2, err = q.UpdateAccountBalance(ctx, updateAcc2)
+	return
 }

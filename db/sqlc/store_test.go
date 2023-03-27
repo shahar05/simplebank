@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var numOfTransactions = 3 // Run n concurrent transactions
+var numOfTransactions = 5 // Run n concurrent transactions
 var arbitraryTestAmount = int64(10)
 
 func TestTransferTx(t *testing.T) {
@@ -17,20 +17,12 @@ func TestTransferTx(t *testing.T) {
 	acc1 := createRandAccount(t)
 	acc2 := createRandAccount(t)
 
-	//fmt.Println(">>before: ", acc1.Balance, acc2.Balance)
-
-	if true {
-		fmt.Println(">>before: ", acc1.Balance, acc2.Balance)
-	}
-
 	errsChan := make(chan error)
 	resultsChan := make(chan TransferTxResult)
 
 	for i := 0; i < numOfTransactions; i++ {
-		txName := fmt.Sprintf("tx %d", i+1)
 		go func() {
-			ctx := context.WithValue(context.Background(), txKey, txName)
-			res, err := store.TransferTx(ctx, TransferTxParams{
+			res, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: acc1.ID,
 				ToAccountID:   acc2.ID,
 				Amount:        arbitraryTestAmount,
@@ -67,14 +59,14 @@ func checkFinalUpdateBalance(t *testing.T, acc1, acc2 Account) {
 	updateAcc2, err := testQueries.GetAccount(context.Background(), acc2.ID)
 	require.NoError(t, err)
 
-	println(">>after: ", updateAcc1.Balance, updateAcc2.Balance)
+	fmt.Println(">>after: ", updateAcc1.Balance, updateAcc2.Balance)
 
 	require.Equal(t, acc1.Balance-arbitraryTestAmount*int64(numOfTransactions), updateAcc1.Balance)
 	require.Equal(t, acc2.Balance+arbitraryTestAmount*int64(numOfTransactions), updateAcc2.Balance)
 }
 
 func checkAccountBalance(t *testing.T, existed map[int]bool, acc1, acc2, fromAcc, toAcc Account) {
-	println(">>tx: ", fromAcc.Balance, toAcc.Balance)
+	fmt.Println(">>tx: ", fromAcc.Balance, toAcc.Balance)
 	diff1 := acc1.Balance - fromAcc.Balance
 	diff2 := toAcc.Balance - acc2.Balance
 	require.Equal(t, diff1, diff2)
@@ -84,7 +76,6 @@ func checkAccountBalance(t *testing.T, existed map[int]bool, acc1, acc2, fromAcc
 	require.True(t, k >= 1 && k <= numOfTransactions)
 	require.NotContains(t, existed, k)
 	existed[k] = true
-
 }
 
 func checkAccount(t *testing.T, acc1, acc2 Account) {
@@ -118,4 +109,52 @@ func checkTransfer(t *testing.T, transfer Transfer, store *Store, fromAcc, toAcc
 
 	_, err := store.GetTransfer(context.Background(), transfer.ID)
 	require.NoError(t, err)
+}
+
+func TestTransferTxDeadlock(t *testing.T) {
+	store := NewStore(testDB)
+
+	account1 := createRandAccount(t)
+	account2 := createRandAccount(t)
+	fmt.Println(">> before:", account1.Balance, account2.Balance)
+
+	n := 10
+	amount := int64(10)
+	errs := make(chan error)
+
+	for i := 0; i < n; i++ {
+		fromAccountID := account1.ID
+		toAccountID := account2.ID
+
+		if i%2 == 1 {
+			fromAccountID = account2.ID
+			toAccountID = account1.ID
+		}
+
+		go func() {
+			_, err := store.TransferTx(context.Background(), TransferTxParams{
+				FromAccountID: fromAccountID,
+				ToAccountID:   toAccountID,
+				Amount:        amount,
+			})
+
+			errs <- err
+		}()
+	}
+
+	for i := 0; i < n; i++ {
+		err := <-errs
+		require.NoError(t, err)
+	}
+
+	// check the final updated balance
+	updatedAccount1, err := store.GetAccount(context.Background(), account1.ID)
+	require.NoError(t, err)
+
+	updatedAccount2, err := store.GetAccount(context.Background(), account2.ID)
+	require.NoError(t, err)
+
+	fmt.Println(">> after:", updatedAccount1.Balance, updatedAccount2.Balance)
+	require.Equal(t, account1.Balance, updatedAccount1.Balance)
+	require.Equal(t, account2.Balance, updatedAccount2.Balance)
 }
