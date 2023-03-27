@@ -14,9 +14,7 @@ jobs:
   build:
     name: Test
     runs-on: ubuntu-latest
-<<<<<<< HEAD
-
-     # Service containers to run with `container-job`
+    # Service containers to run with `container-job`
     services:
       # Label used to access the service container
       postgres:
@@ -34,8 +32,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-=======
->>>>>>> ab8b807616211200c6825f3460955622ca0ac983
     steps:
     - uses: actions/checkout@v3
 
@@ -44,11 +40,8 @@ jobs:
       with:
         go-version: 1.19
 
-<<<<<<< HEAD
     - name: Run Migration
       run: make migrateup  
 
-=======
->>>>>>> ab8b807616211200c6825f3460955622ca0ac983
     - name: Test
       run: make test
