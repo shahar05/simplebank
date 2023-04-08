@@ -84,7 +84,7 @@ func checkAccount(t *testing.T, acc1, acc2 Account) {
 	require.Equal(t, acc1.ID, acc2.ID)
 }
 
-func checkEntry(t *testing.T, entry Entry, store *Store, acc Account, fromAcc bool) {
+func checkEntry(t *testing.T, entry Entry, store Store, acc Account, fromAcc bool) {
 	require.NotEmpty(t, entry)
 	require.Equal(t, acc.ID, entry.AccountID)
 	amount := arbitraryTestAmount
@@ -99,7 +99,7 @@ func checkEntry(t *testing.T, entry Entry, store *Store, acc Account, fromAcc bo
 	require.NoError(t, err)
 }
 
-func checkTransfer(t *testing.T, transfer Transfer, store *Store, fromAcc, toAcc Account) {
+func checkTransfer(t *testing.T, transfer Transfer, store Store, fromAcc, toAcc Account) {
 	require.NotEmpty(t, transfer)
 	require.Equal(t, fromAcc.ID, transfer.FromAccountID)
 	require.Equal(t, toAcc.ID, transfer.ToAccountID)
