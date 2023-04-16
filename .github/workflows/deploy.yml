@@ -11,15 +11,15 @@ jobs:
 
   build:
     name: Build image
+    permissions:
+      id-token: write # need this for OIDC
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        permissions:
-          id-token: write # need this for OIDC
-          contents: read
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::789980025226:role/sm-actions-role
