@@ -2,7 +2,7 @@ package util
 
 import (
 	"time"
-	"log"
+
 	"github.com/spf13/viper"
 )
 
