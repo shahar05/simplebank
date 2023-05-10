@@ -16,9 +16,10 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
+	log.Printf("config: %v", config)
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
-		log.Fatal("cannot connect to db:", err)
+		log.Fatal("cannot conne ct to db:", err)
 	}
 
 	store := db.NewStore(conn)
