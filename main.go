@@ -42,12 +42,15 @@ func main() {
 
 func runDBMigration(migrationURL string, dbSource string) {
 	migration, err := migrate.New(migrationURL, dbSource)
+	log.Printf("runDBMigration 1\n")
 
 	if err != nil {
+		log.Printf("runDBMigration 2: %v\n", err)
 		log.Fatal("cannot create new migration instance: ", err)
 	}
 
 	if err = migration.Up(); err != nil {
+		log.Printf("runDBMigration 3: %v\n", err)
 		log.Fatal("failed to run migrateup:", err)
 	}
 
