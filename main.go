@@ -20,14 +20,14 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
-	log.Printf("config: %v", config)
+	log.Printf("config: %v\n", config)
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot conne ct to db:", err)
 	}
-
+	log.Printf("after sql \n")
 	runDBMigration(config.MigrationURL, config.DBSource)
-
+	log.Printf("after runDBMigration \n")
 	store := db.NewStore(conn)
 	server, err := api.NewServer(config, store)
 	if err != nil {
