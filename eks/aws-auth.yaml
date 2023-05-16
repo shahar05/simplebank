@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 data:
   mapUsers: |
-      - userarn: arn:aws:iam::789980025226:role/sm-actions-role
-        username: github-ci
+      - rolearn: arn:aws:iam::789980025226:role/sm-actions-role
+        username: sm-actions-role
         groups:
           - system:masters
