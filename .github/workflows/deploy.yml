@@ -37,9 +37,12 @@ jobs:
 
       - name: Configure Default User
         run: |
+          mkdir ~/.aws
+          touch ~/.aws/credentials
           echo "[default]" > ~/.aws/credentials
           echo "aws_access_key_id=${secrets.AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
           echo "aws_secret_access_key=${secrets.AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
+          export AWS_PROFILE=default
           echo "Ok Nice"
 
       - name: Load secrets and save to app.env 
@@ -62,7 +65,7 @@ jobs:
           echo "OKOKOKO   1"  
           kubectl config current-context
           echo "OKOKOKO   2"
-          export AWS_PROFILE=default  
+          
           echo "OKOKOKO   3"
           kubectl apply -f eks/aws-auth.yaml
           echo "OKOKOKO   4"
