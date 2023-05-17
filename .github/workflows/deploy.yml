@@ -64,5 +64,5 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          KUBECONFIG:  $(cat /home/runner/.kube/config  | base64)
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
           KUBE_YAML: eks/aws-auth.yaml
