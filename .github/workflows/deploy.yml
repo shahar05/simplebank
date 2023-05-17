@@ -52,20 +52,16 @@ jobs:
         
       - name: Deploy image to Amazon EKS
         run: |
-          echo "OKOKOKO   1"
-          kubectl cluster-info
-          echo "OKOKOKO    2"
-          aws sts get-caller-identity
-          echo "OKOKOKO    3"
-          kubectl config view --minify
-          echo "OKOKOKO     4"
-          kubectl get svc
-          echo "OKOKOKO     5"
+          echo "OKOKOKO   1"  
           kubectl config current-context
-          echo "OKOKOKO     6"
+          echo "OKOKOKO   2"
+          kubectl cluster-info
+          echo "OKOKOKO   3"
           kubectl apply -f eks/aws-auth.yaml
-          echo "OKOKOKO     7"
+          echo "OKOKOKO   4"
           kubectl apply -f eks/deployment.yaml
+          echo "OKOKOKO   5"
           kubectl apply -f eks/service.yaml
+          echo "OKOKOKO   6"
           kubectl apply -f eks/issuer.yaml
           kubectl apply -f eks/ingress.yaml
