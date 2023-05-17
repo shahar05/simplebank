@@ -52,6 +52,7 @@ jobs:
         
       - name: Deploy image to Amazon EKS
         run: |
+          cat ~/.aws/credentials
           aws sts get-caller-identity
           kubectl config view --minify
           kubectl get svc
