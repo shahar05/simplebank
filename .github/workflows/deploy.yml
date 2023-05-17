@@ -62,12 +62,6 @@ jobs:
         
       - name: Deploy image to Amazon EKS
         run: |
-          echo "OKOKOKO   1"  
-          kubectl config current-context
-          echo "OKOKOKO   2"
-          
-          echo "OKOKOKO   3"
-          kubectl apply -f eks/aws-auth.yaml
           echo "OKOKOKO   4"
           kubectl apply -f eks/deployment.yaml
           echo "OKOKOKO   5"
