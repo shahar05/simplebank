@@ -50,19 +50,12 @@ jobs:
       - name: Update kube config
         run: aws eks update-kubeconfig --name simple-bank --region eu-west-1
         
-      # - name: Deploy image to Amazon EKS
-      #   run: |
-      #     kubectl apply -f eks/aws-auth.yaml
-      #     kubectl apply -f eks/deployment.yaml
-      #     kubectl apply -f eks/service.yaml
-      #     kubectl apply -f eks/issuer.yaml
-      #     kubectl apply -f eks/ingress.yaml
-
-      -
-        name: Deployment
-        uses: Pablommr/kubernetes-eks@v1.2.0
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
-          KUBE_YAML: eks/aws-auth.yaml
+      - name: Deploy image to Amazon EKS
+        run: |
+          aws sts get-caller-identity
+          kubectl config current-context
+          # kubectl apply -f eks/aws-auth.yaml
+          # kubectl apply -f eks/deployment.yaml
+          # kubectl apply -f eks/service.yaml
+          # kubectl apply -f eks/issuer.yaml
+          # kubectl apply -f eks/ingress.yaml
