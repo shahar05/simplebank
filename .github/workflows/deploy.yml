@@ -54,8 +54,6 @@ jobs:
         run: |
           echo "OKOKOKO   1"  
           kubectl config current-context
-          echo "OKOKOKO   2"
-          kubectl cluster-info
           echo "OKOKOKO   3"
           kubectl apply -f eks/aws-auth.yaml
           echo "OKOKOKO   4"
