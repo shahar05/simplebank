@@ -35,6 +35,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Configure Default User
+        run: |
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id=${secrets.AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
+          echo "aws_secret_access_key=${secrets.AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
+          echo "Ok Nice"
+          
       - name: Load secrets and save to app.env 
         run: aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env
 
