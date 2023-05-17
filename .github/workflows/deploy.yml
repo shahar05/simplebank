@@ -35,16 +35,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Configure Default User
-        run: |
-          mkdir ~/.aws
-          touch ~/.aws/credentials
-          echo "[sm-actions-role]" > ~/.aws/credentials
-          echo "aws_access_key_id=${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
-          export AWS_PROFILE=sm-actions-role
-          echo "Ok Nice"
-
       - name: Load secrets and save to app.env 
         run: aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env
 
@@ -60,12 +50,17 @@ jobs:
       - name: Update kube config
         run: aws eks update-kubeconfig --name simple-bank --region eu-west-1
         
-      - name: Deploy image to Amazon EKS
-        run: |
-          echo "OKOKOKO   4"
-          kubectl apply -f eks/deployment.yaml
-          echo "OKOKOKO   5"
-          kubectl apply -f eks/service.yaml
-          echo "OKOKOKO   6"
-          kubectl apply -f eks/issuer.yaml
-          kubectl apply -f eks/ingress.yaml
+      # - name: Deploy image to Amazon EKS
+      #   run: |
+      #     kubectl apply -f eks/aws-auth.yaml
+      #     kubectl apply -f eks/deployment.yaml
+      #     kubectl apply -f eks/service.yaml
+      #     kubectl apply -f eks/issuer.yaml
+      #     kubectl apply -f eks/ingress.yaml
+
+      - name: deploy to cluster
+        uses: wahyd4/kubectl-helm-action@master
+        env:
+          KUBE_CONFIG_DATA: ${cat /home/runner/.kube/config}
+        with:
+          args: kubectl apply -f manifest.yaml          
