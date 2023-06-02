@@ -55,10 +55,10 @@ jobs:
           aws sts get-caller-identity
           echo $AWS_PROFILE
           kubectl config current-context
-          kubectl get pods
+          # kubectl get pods
           cat /home/runner/.kube/config
-          kubectl apply -f eks/aws-auth.yaml
-          kubectl apply -f eks/deployment.yaml
-          kubectl apply -f eks/service.yaml
-          kubectl apply -f eks/issuer.yaml
-          kubectl apply -f eks/ingress.yaml
+          # kubectl apply -f eks/aws-auth.yaml
+          # kubectl apply -f eks/deployment.yaml
+          # kubectl apply -f eks/service.yaml
+          # kubectl apply -f eks/issuer.yaml
+          # kubectl apply -f eks/ingress.yaml
